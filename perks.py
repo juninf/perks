@@ -1,7 +1,8 @@
 import streamlit as st
 import random
+import time
 
-# ================== CONFIGURAÇÃO DE PROBABILIDADES ==================
+# ================== CONFIG ==================
 prob_perk = {
     "comum": 0.70,
     "raro": 0.85,
@@ -27,7 +28,6 @@ prob_perks_lendario = {
     99: 0.02
 }
 
-# ================== IMAGENS DAS PERKS ==================
 imagens_perks = {
     1: "https://drive.google.com/uc?export=view&id=17kjno1X8Tfm7Mim0FtGvkc78MIvGLEyR",
     2: "https://drive.google.com/uc?export=view&id=1nwRAC94ottKdfXDKAZk_gECK2eI6diU8",
@@ -49,7 +49,7 @@ imagens_perks = {
     99: "https://drive.google.com/uc?export=view&id=1xguwjrzd2eyky5edDoOxf_tZe839ZmKk"
 }
 
-# ================== FUNÇÕES DE SORTEIO ==================
+# ================== FUNÇÕES ==================
 def sortear_raridade():
     r = random.random()
     if r < prob_perk["comum"]: return "comum"
@@ -74,37 +74,40 @@ def sortear_perk_completo():
     raridade = sortear_raridade()
     return sortear_perk_dentro_raridade(raridade)
 
-# ================== CONFIG DE CORES ==================
-def definir_cor(numero):
-    if 1 <= numero <= 5: return "#D9D9D9"
-    elif 6 <= numero <= 10: return "#ADD8E6"
-    elif 11 <= numero <= 13: return "#E6CCFF"
-    elif 14 <= numero <= 16: return "#FFD700"
-    elif numero in [98, 99]: return "#FF69B4"
+def cor_raridade(numero):
+    if 1 <= numero <= 5: return "#D9D9D9"   # comum
+    elif 6 <= numero <= 9: return "#ADD8E6" # raro
+    elif 10 <= numero <= 12: return "#E6CCFF" # épico
+    elif 13 <= numero <= 16: return "#FFD700" # lendário
+    elif numero in [98, 99]: return "#FF69B4" # mítico
     return "#FFFFFF"
 
-# ================== STREAMLIT APP ==================
-st.set_page_config(page_title="Roleta de Perks", layout="wide")
-st.title("🎰 Roleta de Perks")
+# ================== APP ==================
+st.set_page_config(page_title="Roleta de Perks", layout="centered")
+st.markdown("<h1 style='text-align:center;'>🎰 Roleta de Perks</h1>", unsafe_allow_html=True)
 
-col1, col2 = st.columns([2,1])
+if st.button("🎲 Girar!"):
+    placeholder = st.empty()
 
-with col1:
-    st.subheader("Sortear Perks")
-    qtd = st.number_input("Quantidade de giros", min_value=1, max_value=20, value=5, step=1)
-    if st.button("Rodar Roleta 🎲"):
-        resultados = [sortear_perk_completo() for _ in range(qtd)]
-        for r in resultados:
-            cor = definir_cor(r)
-            url = imagens_perks.get(r, None)
-            with st.container():
-                if url:
-                    st.image(url, width=80)
-                st.markdown(f"<p style='color:{cor}; font-size:18px; font-weight:bold;'>Perk: {r}</p>", unsafe_allow_html=True)
+    # Animação fake de rolagem
+    for i in range(10):
+        temp = random.choice(list(imagens_perks.values()))
+        with placeholder.container():
+            st.image(temp, width=120)
+        time.sleep(0.1 + i*0.05)  # aumenta o delay (efeito de desacelerar)
 
-with col2:
-    st.subheader("Configuração")
-    st.write("Probabilidades atuais:")
-    st.json(prob_perk)
-    st.write("Distribuição perks lendários:")
-    st.json(prob_perks_lendario)
+    # Resultado final
+    resultado = sortear_perk_completo()
+    url = imagens_perks[resultado]
+    cor = cor_raridade(resultado)
+
+    with placeholder.container():
+        st.markdown(
+            f"""
+            <div style='text-align:center;'>
+                <img src='{url}' width='160' style='border: 5px solid {cor}; border-radius:20px; box-shadow:0 0 30px {cor};'>
+                <p style='color:{cor}; font-size:22px; font-weight:bold;'>🎯 Perk {resultado}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )

@@ -31,7 +31,6 @@ prob_perks_lendario = {
     99: 0.02
 }
 
-# ================== FUNÇÕES ==================
 def sortear_raridade():
     r = random.random()
     if r < prob_perk["comum"]: return "comum"
@@ -66,11 +65,10 @@ def cor_raridade(numero):
 
 # ================== CARREGAR IMAGENS DO ZIP ==================
 zip_path = Path(__file__).parent / "drive-download-20250825T030157Z-1-001.zip"
-temp_dir = tempfile.TemporaryDirectory()  # pasta temporária
+temp_dir = tempfile.TemporaryDirectory()
 with ZipFile(zip_path, 'r') as zip_ref:
     zip_ref.extractall(temp_dir.name)
 
-# Mapear imagens para números de perks
 imagens_perks = {}
 for img_path in Path(temp_dir.name).glob("*.png"):
     try:
@@ -86,25 +84,26 @@ st.markdown("<h1 style='text-align:center;'>🎰 Roleta de Perks</h1>", unsafe_a
 if st.button("🎲 Girar!"):
     placeholder = st.empty()
 
-    # Animação fake de rolagem
-    for i in range(10):
+    # ANIMAÇÃO DE GIRO
+    total_frames = 25
+    for i in range(total_frames):
         temp = random.choice(list(imagens_perks.values()))
         with placeholder.container():
             st.image(temp, width=120)
-        time.sleep(0.1 + i*0.05)
+        time.sleep(0.05 + i*0.02)  # desaceleração progressiva
 
-    # Resultado final
+    # RESULTADO FINAL
     resultado = sortear_perk_completo()
     url = imagens_perks[resultado]
     cor = cor_raridade(resultado)
 
+    # EFEITO DE BRILHO / PULSO
+    for pulse in range(5):
+        tamanho = 140 + pulse*4
+        with placeholder.container():
+            st.image(url, width=tamanho)
+        time.sleep(0.1)
+    # Tamanho final
     with placeholder.container():
-        st.markdown(
-            f"""
-            <div style='text-align:center;'>
-                <img src='{url}' width='160' style='border: 5px solid {cor}; border-radius:20px; box-shadow:0 0 30px {cor};'>
-                <p style='color:{cor}; font-size:22px; font-weight:bold;'>🎯 Perk {resultado}</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.image(url, width=160)
+        st.markdown(f"<p style='text-align:center; color:{cor}; font-size:24px; font-weight:bold;'>🎯 Perk {resultado}</p>", unsafe_allow_html=True)

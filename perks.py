@@ -1,6 +1,9 @@
 import streamlit as st
 import random
 import time
+from pathlib import Path
+from zipfile import ZipFile
+import tempfile
 
 # ================== CONFIG ==================
 prob_perk = {
@@ -26,27 +29,6 @@ prob_perks_lendario = {
     16: 0.16,
     98: 0.02,
     99: 0.02
-}
-
-imagens_perks = {
-    1: "https://drive.google.com/uc?export=view&id=17kjno1X8Tfm7Mim0FtGvkc78MIvGLEyR",
-    2: "https://drive.google.com/uc?export=view&id=1nwRAC94ottKdfXDKAZk_gECK2eI6diU8",
-    3: "https://drive.google.com/uc?export=view&id=1W4Z-Z6lYELvq4gz3E4WgLBoYeVYZdmQX",
-    4: "https://drive.google.com/uc?export=view&id=1Yjh9oWyBmvcPpIPFyvciih9qpYJSaPpO",
-    5: "https://drive.google.com/uc?export=view&id=1zb1x_OUIgZhFgEo4NNgJB8GTWzRdRNSQ",
-    6: "https://drive.google.com/uc?export=view&id=1setyGf74g-xwrkOR5aE8RU2LcWXu0uDF",
-    7: "https://drive.google.com/uc?export=view&id=1ZYjCqAlIaRN-epAa6FSC683tIKzp3FEz",
-    8: "https://drive.google.com/uc?export=view&id=1q91wjDbLIcEYHIcYZO_xT0NiW7wd7Gg5",
-    9: "https://drive.google.com/uc?export=view&id=1sbPP5WQV62LWbCdVQnpzb2ZlMtx3rlmc",
-    10: "https://drive.google.com/uc?export=view&id=1_vNtjhm9h9vRIF-ppFGPc3QeodRpxRo6",
-    11: "https://drive.google.com/uc?export=view&id=1D_98-SsAN7qkzmhAWKgpR6KS0NtVmFp0",
-    12: "https://drive.google.com/uc?export=view&id=1CJYAFjYL8S7DGewDR-PxtmllCbOa9ZoO",
-    13: "https://drive.google.com/uc?export=view&id=1HOuwFmggOGNw7Ozd2_fveZd_EsheYnoK",
-    14: "https://drive.google.com/uc?export=view&id=1zFMUITltLQGO24LCPKX6zSk5vIm-khia",
-    15: "https://drive.google.com/uc?export=view&id=1WLjBFDKAU5x1waKSV0RXLqbsDn49mkoK",
-    16: "https://drive.google.com/uc?export=view&id=1kIk3pMNbL49tAdaVRCA5MQo_ag_79L8k",
-    98: "https://drive.google.com/uc?export=view&id=1bK2gEFvGy6oIFiwdmlanQICeqKLHC-yx",
-    99: "https://drive.google.com/uc?export=view&id=1xguwjrzd2eyky5edDoOxf_tZe839ZmKk"
 }
 
 # ================== FUNÇÕES ==================
@@ -82,7 +64,22 @@ def cor_raridade(numero):
     elif numero in [98, 99]: return "#FF69B4" # mítico
     return "#FFFFFF"
 
-# ================== APP ==================
+# ================== CARREGAR IMAGENS DO ZIP ==================
+zip_path = Path(__file__).parent / "drive-download-20250825T030157Z-1-001.zip"
+temp_dir = tempfile.TemporaryDirectory()  # pasta temporária
+with ZipFile(zip_path, 'r') as zip_ref:
+    zip_ref.extractall(temp_dir.name)
+
+# Mapear imagens para números de perks
+imagens_perks = {}
+for img_path in Path(temp_dir.name).glob("*.png"):
+    try:
+        numero = int(img_path.stem)
+        imagens_perks[numero] = img_path
+    except ValueError:
+        continue
+
+# ================== STREAMLIT APP ==================
 st.set_page_config(page_title="Roleta de Perks", layout="centered")
 st.markdown("<h1 style='text-align:center;'>🎰 Roleta de Perks</h1>", unsafe_allow_html=True)
 
@@ -94,7 +91,7 @@ if st.button("🎲 Girar!"):
         temp = random.choice(list(imagens_perks.values()))
         with placeholder.container():
             st.image(temp, width=120)
-        time.sleep(0.1 + i*0.05)  # aumenta o delay (efeito de desacelerar)
+        time.sleep(0.1 + i*0.05)
 
     # Resultado final
     resultado = sortear_perk_completo()

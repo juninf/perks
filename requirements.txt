@@ -1,6 +1,7 @@
 streamlit
-plotly
+streamlit-lottie
 pandas
 psycopg2
+plotly
 networkx
 scipy
